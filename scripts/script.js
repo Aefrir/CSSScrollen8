@@ -93,86 +93,103 @@ let characterChoice = prompt(`
     
     document.querySelector(".character > img").src = "images/characters/" + imageSrc;
 
-    function isInViewport(element) {
-        const rect = element.getBoundingClientRect();
-        return (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
-    }
-    
-    const treasureRoom = document.querySelector(".level-2-1");
-    
-    document.querySelector("main").addEventListener("scroll", (event) => {
-        if (isInViewport(treasureRoom)){
-            let random = Math.floor(Math.random() * 8) + 1;
-            let imageSrc = "";
-    
-            switch (random){
-                case 1:
-                    imageSrc = "boomerang.png";
-                break;
-                case 2:
-                    imageSrc = "candle.png";
-                break;
-                case 3:
-                    imageSrc = "d20.png";
-                break;
-                case 4:
-                    imageSrc = "guppys-paw.png";
-                break;
-                case 5:
-                    imageSrc = "hourglass.png";
-                break;
-                case 6:
-                    imageSrc = "moms-shovel.png";
-                break;
-                case 7:
-                    imageSrc = "mystery-gift.png";
-                break;
-                case 8:
-                    imageSrc = "necronomicon.png";
-                break;
-                default:
-                    imageSrc = "boomerang.png";
-            }
-    
-            document.querySelector(".inventory > img").src = "images/items/" + imageSrc;
-            document.querySelector(".inventory > img").style.display = "block";
-        }
-    });
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    const windowHeight = (window.innerHeight || document.documentElement.clientHeight);
+    const windowWidth = (window.innerWidth || document.documentElement.clientWidth);
 
-    const spikeRoom = document.querySelector(".level-3-1");
-let health = 3;
+    const verticallyVisible = rect.bottom > 0 && rect.top < windowHeight;
+    const horizontallyVisible = rect.right > 0 && rect.left < windowWidth;
 
-document.querySelector("main").addEventListener("scroll", (event) => {
-	if (isInViewport(spikeRoom)){
-		health = health -1;
+    return verticallyVisible && horizontallyVisible;
+}
 
-		if (health < 3){
-			document.querySelector(".health > img:nth-child(3)").style.display = "none";
-		}
-		if (health < 2){
-			document.querySelector(".health > img:nth-child(2)").style.display = "none";
-		}
-		if (health < 1){
-			document.querySelector(".health > img:nth-child(1)").style.display = "none";
-			setTimeout(() => {
-				alert("GAME OVER!")
-			}, 500);
-			setTimeout(() => {
-				document.querySelector("main").scrollTo(0, 0)
-			}, 1000);
-			setTimeout(() => {
-				health = 3;
-				document.querySelector(".health > img:nth-child(1)").style.display = "block";
-				document.querySelector(".health > img:nth-child(2)").style.display = "block";
-				document.querySelector(".health > img:nth-child(3)").style.display = "block";
-				document.querySelector(".inventory > img").style.display = "none";
-			}, 1500);
-		}
+const treasureRoom = document.querySelector(".level-2-1");
+const itemImg = document.querySelector(".inventory > img");
+
+let wasInViewport = false;
+
+window.addEventListener("scroll", () => {
+	const currentlyInViewport = isInViewport(treasureRoom);
+
+	if (currentlyInViewport && !wasInViewport) {
+		const items = [
+			"boomerang.png",
+			"candle.png",
+			"d20.png",
+			"guppys-paw.png",
+			"hourglass.png",
+			"moms-shovel.png",
+			"mystery-gift.png",
+			"necronomicon.png"
+		];
+
+		const randomIndex = Math.floor(Math.random() * items.length);
+		const selectedItem = items[randomIndex];
+
+		itemImg.src = "images/items/" + selectedItem;
+		itemImg.style.display = "block";
 	}
+	wasInViewport = currentlyInViewport;
 });
 
+//Spikeroom 
+const spikeRoom = document.querySelector(".level-3-1");
+const rainbow = document.querySelector(".level-3-2");
+let wasInSpikeRoom = false;
+let wasInRainbowRoom = false;
+let health = 3;
+
+window.addEventListener("scroll", () => {
+    const isInSpikeRoom = isInViewport(spikeRoom);
+    const isInRainbowRoom = isInViewport(rainbow);
+
+    if (isInSpikeRoom && !wasInSpikeRoom) {
+        health = health - 1;
+
+        // Hide hearts accordingly
+        if (health < 3) {
+            document.querySelector(".health > img:nth-child(3)").style.display = "none";
+        }
+        if (health < 2) {
+            document.querySelector(".health > img:nth-child(2)").style.display = "none";
+        }
+        if (health < 1) {
+            document.querySelector(".health > img:nth-child(1)").style.display = "none";
+
+            setTimeout(() => {
+                alert("GAME OVER!");
+            }, 500);
+
+            setTimeout(() => {
+                document.querySelector(".level-1-1").scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+            }, 1000);
+
+            setTimeout(() => {
+                health = 3;
+                document.querySelector(".health > img:nth-child(1)").style.display = "inline";
+                document.querySelector(".health > img:nth-child(2)").style.display = "inline";
+                document.querySelector(".health > img:nth-child(3)").style.display = "inline";
+                document.querySelector(".inventory > img").style.display = "none";
+            }, 1500);
+        }
+    }
+    wasInSpikeRoom = isInSpikeRoom;
+    if(isInRainbowRoom && !wasInRainbowRoom){
+        health = 3;
+        document.querySelector(".health > img:nth-child(1)").style.display = "inline";
+        document.querySelector(".health > img:nth-child(2)").style.display = "inline";
+        document.querySelector(".health > img:nth-child(3)").style.display = "inline";   
+    }
+    wasInRainbowRoom = isInRainbowRoom;
+});
+
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        document.querySelector(".level-1-1").scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
+    }, 0);
+});
