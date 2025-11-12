@@ -39,8 +39,8 @@ html, body {
 
 .inventory > img {
 	display: none;
-	width: 100px;
-	height: 100px;
+	width: 7vw;
+	height: 7vw;
 }
 
 .health {
